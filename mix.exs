@@ -13,7 +13,13 @@ defmodule DNSSRVCluster.MixProject do
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: aliases(),
-      test_coverage: [ignore_modules: [DNSSRVCluster.App.Default]],
+      test_coverage: [tool: ExCoveralls, ignore_modules: [DNSSRVCluster.App.Default]],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       docs: docs(),
       deps: deps(),
       source_url: @scm_url,
@@ -42,6 +48,7 @@ defmodule DNSSRVCluster.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:excoveralls, "~> 0.10", only: :test, runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:styler, "~> 0.9", only: [:dev, :test], runtime: false}
