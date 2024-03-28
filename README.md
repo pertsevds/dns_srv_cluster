@@ -76,6 +76,4 @@ children = [
 {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/dns_srv_cluster>.
+Documentation can be found at <https://hexdocs.pm/dns_srv_cluster>.
