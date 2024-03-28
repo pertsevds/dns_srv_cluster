@@ -36,7 +36,7 @@ defmodule DNSSRVCluster.Worker do
   end
 
   defp schedule_next_poll(state) do
-    if not is_nil(state.poll_timer), do: Process.cancel_timer(state.poll_timer, info: false)
+    unless is_nil(state.poll_timer), do: Process.cancel_timer(state.poll_timer, info: false)
     %{state | poll_timer: Process.send_after(self(), :do_discovery, state.interval)}
   end
 
