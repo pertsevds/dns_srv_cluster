@@ -5,7 +5,11 @@ defmodule DNSSRVCluster.Resolver do
 
   @spec basename(atom()) :: binary()
   def basename(node_name) when is_atom(node_name) do
-    [basename, _] = String.split(to_string(node_name), "@")
+    [basename, _] =
+      node_name
+      |> to_string()
+      |> String.split("@")
+
     basename
   end
 
