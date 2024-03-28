@@ -2,6 +2,10 @@
 
 Elixir clustering with DNS SRV records.
 
+---
+
+[![Coverage Status](https://coveralls.io/repos/github/pertsevds/dns_srv_cluster/badge.svg?branch=main)](https://coveralls.io/github/pertsevds/dns_srv_cluster?branch=main)
+
 ## Installation
 
 The package can be installed by adding `dns_srv_cluster` to your list of dependencies in `mix.exs`:
