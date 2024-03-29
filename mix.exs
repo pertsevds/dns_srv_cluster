@@ -6,10 +6,13 @@ defmodule DNSSRVCluster.MixProject do
   @maintainer "Dmitriy Pertsev"
 
   def project do
+    elixir_version = System.version()
+    styler_compat = Version.compare(elixir_version, "1.14.0")
+
     [
       app: :dns_srv_cluster,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: aliases(),
@@ -21,7 +24,7 @@ defmodule DNSSRVCluster.MixProject do
         "coveralls.html": :test
       ],
       docs: docs(),
-      deps: deps(),
+      deps: deps(styler_compat),
       source_url: @scm_url,
       homepage_url: @scm_url,
       description: "Elixir clustering with DNS SRV records"
@@ -46,12 +49,20 @@ defmodule DNSSRVCluster.MixProject do
   end
 
   # Run "mix help deps" to learn about dependencies.
-  defp deps do
+  defp deps(styler_compat) when styler_compat in [:gt, :eq] do
     [
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10", only: :test, runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+      {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp deps(_) do
+    [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:styler, "~> 0.9", only: [:dev, :test], runtime: false}
+      {:excoveralls, "~> 0.10", only: :test, runtime: false},
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false}
     ]
   end
 

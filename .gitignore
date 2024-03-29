@@ -27,3 +27,6 @@ dns_srv_cluster-*.tar
 
 # VSCode
 /.vscode/
+
+# ASDF
+.tool-versions

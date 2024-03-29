@@ -1,5 +1,9 @@
 defmodule DNSSRVCluster.Resolver do
   @moduledoc false
+  require Logger
+  require Record
+
+  Record.defrecord(:hostent, Record.extract(:hostent, from_lib: "kernel/include/inet.hrl"))
 
   # Public
 
@@ -20,11 +24,16 @@ defmodule DNSSRVCluster.Resolver do
   def list_connected_nodes, do: Node.list(:visible)
 
   def lookup(query, type) when is_binary(query) and type in [:srv] do
-    :inet_res.lookup(~c"#{query}", :in, type)
+    case :inet_res.getbyname(~c"#{query}", type) do
+      {:ok, hostent(h_addr_list: addr_list)} ->
+        addr_list
+
+      {:error, _} ->
+        Logger.warning("inet_res.getbyname for query \"#{query}\" with type \"#{type}\"failed.")
+        []
+    end
   end
 
   @spec my_node() :: atom()
-  def my_node do
-    node()
-  end
+  def my_node, do: node()
 end

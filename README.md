@@ -4,6 +4,7 @@ Elixir clustering with DNS SRV records.
 
 ---
 
+[![CI](https://github.com/pertsevds/dns_srv_cluster/actions/workflows/ci.yml/badge.svg)](https://github.com/pertsevds/dns_srv_cluster/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/pertsevds/dns_srv_cluster/badge.svg?branch=main)](https://coveralls.io/github/pertsevds/dns_srv_cluster?branch=main)
 
 ## Installation
@@ -21,10 +22,10 @@ end
 Add to your DNS zone your SRV record (https://en.wikipedia.org/wiki/SRV_record):
 
 ```sh
-_app._tcp.yourdomain.com. 86400 IN SRV 0 10 1234 node1.yourdomain.com.
-_app._tcp.yourdomain.com. 86400 IN SRV 0 10 1234 node2.yourdomain.com.
-_app._tcp.yourdomain.com. 86400 IN SRV 0 10 1234 node3.yourdomain.com.
-_app._tcp.yourdomain.com. 86400 IN SRV 0 10 1234 node4.yourdomain.com.
+_app._tcp.yourdomain.com. 60 IN SRV 0 10 1234 node1.yourdomain.com.
+_app._tcp.yourdomain.com. 60 IN SRV 0 10 1234 node2.yourdomain.com.
+_app._tcp.yourdomain.com. 60 IN SRV 0 10 1234 node3.yourdomain.com.
+_app._tcp.yourdomain.com. 60 IN SRV 0 10 1234 node4.yourdomain.com.
 ```
 
 Add to your config files (`config/prod.exs`, `config/dev.exs`):
@@ -49,7 +50,7 @@ either in your deployment platform or inside `rel/env.sh.eex`:
 export RELEASE_COOKIE="my-app-cookie"
 ```
 
-## All configuration options
+## Configuration options
 
   * `query` - your DNS SRV record, for example: "_app._tcp.yourdomain.com".
   * `interval` - the millisec interval between DNS queries. Defaults to `5_000`.
@@ -79,5 +80,17 @@ children = [
 
 {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 ```
+
+## Support Matrix
+
+Tests automatically run against a matrix of OTP and Elixir Versions, see the [ci.yml](https://github.com/pertsevds/dns_srv_cluster/tree/main/.github/workflows/ci.yml) for details.
+
+| OTP \ Elixir | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 |
+|:------------:|:----:|:----:|:----:|:----:|:----:|
+| 24           | ✅   | ✅   | ✅   | ✅   | ✅  |
+| 25           | N/A  | ✅   | ✅   | ✅   | ✅   |
+| 26           | N/A  | N/A  | ✅   | ✅   | ✅   |
+
+## Documentation
 
 Documentation can be found at <https://hexdocs.pm/dns_srv_cluster>.

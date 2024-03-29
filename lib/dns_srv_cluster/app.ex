@@ -56,11 +56,10 @@ defmodule DNSSRVCluster.App do
 
     case query do
       {:ok, query} ->
-        child_spec =
-          [
-            {DNSSRVCluster.Worker,
-             query: query, interval: interval(), connect_timeout: connect_timeout(), resolver: resolver()}
-          ]
+        child_spec = [
+          {DNSSRVCluster.Worker,
+           query: query, interval: interval(), connect_timeout: connect_timeout(), resolver: resolver()}
+        ]
 
         opts = [strategy: :one_for_one, name: DNSSRVCluster.Supervisor]
         Supervisor.start_link(child_spec, opts)
