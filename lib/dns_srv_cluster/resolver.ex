@@ -29,7 +29,7 @@ defmodule DNSSRVCluster.Resolver do
         addr_list
 
       {:error, _} ->
-        Logger.warning("inet_res.getbyname for query \"#{query}\" with type \"#{type}\"failed.")
+        Logger.warning(~s(inet_res.getbyname for query "#{query}" with type "#{type}"failed.))
         []
     end
   end

@@ -96,6 +96,7 @@ defmodule DNSSRVCluster.Worker do
     schedule_next_poll(state)
   end
 
+  # credo:disable-for-next-line
   defp warn_on_invalid_dist do
     release? = is_binary(System.get_env("RELEASE_NAME"))
     net_state = if function_exported?(:net_kernel, :get_state, 0), do: :net_kernel.get_state()
