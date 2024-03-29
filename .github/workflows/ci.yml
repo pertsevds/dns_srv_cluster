@@ -50,9 +50,6 @@ jobs:
           - os: ubuntu-20.04
             elixir-version: 1.16
             otp-version: 25
-          - os: ubuntu-20.04
-            elixir-version: 1.16
-            otp-version: 26
           - os: ubuntu-22.04
             elixir-version: 1.16
             otp-version: 26
