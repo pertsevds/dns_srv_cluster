@@ -11,14 +11,51 @@ permissions:
 
 jobs:
   test_linux_elixir_latest:
-    name: ${{ matrix.os }}, Erlang/OTP ${{ matrix.otp_version }} Elixir ${{ matrix.elixir_version }}
+    name: ${{ matrix.os }}, Erlang/OTP ${{ matrix.otp-version }} Elixir ${{ matrix.elixir-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        elixir_version: ['1']
-        otp_version: ['26']
+        include:
+          - os: ubuntu-20.04
+            elixir-version: 1.12
+            otp-version: 24
+          - os: ubuntu-20.04
+            elixir-version: 1.13
+            otp-version: 24
+          - os: ubuntu-20.04
+            elixir-version: 1.13
+            otp-version: 25
+          - os: ubuntu-20.04
+            elixir-version: 1.14
+            otp-version: 24
+          - os: ubuntu-20.04
+            elixir-version: 1.14
+            otp-version: 25
+          - os: ubuntu-22.04
+            elixir-version: 1.14
+            otp-version: 26
+          - os: ubuntu-20.04
+            elixir-version: 1.15
+            otp-version: 24
+          - os: ubuntu-20.04
+            elixir-version: 1.15
+            otp-version: 25
+          - os: ubuntu-22.04
+            elixir-version: 1.15
+            otp-version: 26
+          - os: ubuntu-20.04
+            elixir-version: 1.16
+            otp-version: 24
+          - os: ubuntu-20.04
+            elixir-version: 1.16
+            otp-version: 25
+          - os: ubuntu-20.04
+            elixir-version: 1.16
+            otp-version: 26
+          - os: ubuntu-22.04
+            elixir-version: 1.16
+            otp-version: 26
     env:
       MIX_ENV: test
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,19 +64,21 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
-        elixir-version:  ${{ matrix.elixir_version }}
-        otp-version:  ${{ matrix.otp_version }}
+        elixir-version:  ${{ matrix.elixir-version }}
+        otp-version:  ${{ matrix.otp-version }}
     - name: Restore dependencies cache
       uses: actions/cache@v4
       with:
         path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: ${{ runner.os }}-mix-
+        key: ${{ runner.os }}-${{ matrix.elixir-version }}-${{ matrix.otp-version}}-mix-${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-${{ matrix.elixir-version}}-${{ matrix.otp-version }}-mix-
     - name: Install dependencies
       run: mix deps.get
     - name: Run mix format
       run: mix format --check-formatted
-    - name: Run coverage export
-      run: mix coveralls.github
+      if: startsWith(matrix.elixir-version, '1.14') || startsWith(matrix.elixir-version, '1.15') || startsWith(matrix.elixir-version, '1.16')
     - name: Run tests
       run: mix test
+    - name: Run coverage export
+      run: mix coveralls.github
+      if: startsWith(matrix.elixir-version, '1.16') && startsWith(matrix.otp-version, '26')
