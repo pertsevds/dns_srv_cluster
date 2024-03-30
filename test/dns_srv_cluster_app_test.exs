@@ -136,7 +136,7 @@ defmodule DNSSRVClusterAppTest do
         :sys.get_state(DNSSRVCluster.get_pid())
       end)
 
-    assert res =~ "not found"
+    assert res =~ "[warning] DNS lookup failed with error: Lookup failed."
 
     postrun()
   end

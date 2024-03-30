@@ -83,6 +83,7 @@ defmodule DNSSRVCluster.Worker do
 
       {:error, err} ->
         Logger.warning("DNS lookup failed with error: #{err}.")
+        []
     end
   end
 
