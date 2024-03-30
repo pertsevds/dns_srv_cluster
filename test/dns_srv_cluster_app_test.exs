@@ -141,57 +141,62 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  test "running outside of a release should print the warning message" do
-    Process.register(self(), :DNSSRVClusterAppTest)
+  elixir_version = System.version()
+  version_compat = Version.compare(elixir_version, "1.14.0")
 
-    Application.put_all_env(
-      dns_srv_cluster: [
-        query: "_app._tcp.nonexistent.domain",
-        resolver: DNSSRVClusterAppTest.Resolver
-      ]
-    )
+  if version_compat in [:gt, :eq] do
+    test "running outside of a release should print the warning message" do
+      Process.register(self(), :DNSSRVClusterAppTest)
 
-    Application.stop(:dns_srv_cluster)
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.Resolver
+        ]
+      )
 
-    res =
-      ExUnit.CaptureLog.capture_log(fn ->
-        :ok = Application.start(:dns_srv_cluster)
-        :sys.get_state(DNSSRVCluster.get_pid())
-      end)
+      Application.stop(:dns_srv_cluster)
 
-    assert res =~ """
-           [warning] Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
-           longnames.
-           """
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
 
-    postrun()
-  end
+      assert res =~ """
+             [warning] Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+             longnames.
+             """
 
-  test "running in release without distribution should print the warning message" do
-    Process.register(self(), :DNSSRVClusterAppTest)
+      postrun()
+    end
 
-    Application.put_all_env(
-      dns_srv_cluster: [
-        query: "_app._tcp.nonexistent.domain",
-        resolver: DNSSRVClusterAppTest.Resolver
-      ]
-    )
+    test "running in release without distribution should print the warning message" do
+      Process.register(self(), :DNSSRVClusterAppTest)
 
-    System.put_env("RELEASE_NAME", "my_app")
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.Resolver
+        ]
+      )
 
-    Application.stop(:dns_srv_cluster)
+      System.put_env("RELEASE_NAME", "my_app")
 
-    res =
-      ExUnit.CaptureLog.capture_log(fn ->
-        :ok = Application.start(:dns_srv_cluster)
-        :sys.get_state(DNSSRVCluster.get_pid())
-      end)
+      Application.stop(:dns_srv_cluster)
 
-    assert res =~
-             "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
 
-    System.delete_env("RELEASE_NAME")
+      assert res =~
+               "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
 
-    postrun()
+      System.delete_env("RELEASE_NAME")
+
+      postrun()
+    end
   end
 end
