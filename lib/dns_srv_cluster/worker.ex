@@ -96,41 +96,66 @@ defmodule DNSSRVCluster.Worker do
     schedule_next_poll(state)
   end
 
-  # credo:disable-for-next-line
+  defp get_net_state do
+    if function_exported?(:net_kernel, :get_state, 0) do
+      :net_kernel.get_state()
+    else
+      nil
+    end
+  end
+
+  defp warn_node_not_running_distributed_mode do
+    Logger.warning("""
+    Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:
+
+        export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
+        export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
+    """)
+  end
+
+  defp warn_node_not_running_distributed_mode_with_longnames do
+    Logger.warning("""
+      Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+      longnames.
+      https://www.erlang.org/doc/man/net_kernel.html#start-2
+      """)
+  end
+
   defp warn_on_invalid_dist do
     release? = is_binary(System.get_env("RELEASE_NAME"))
-    net_state = if function_exported?(:net_kernel, :get_state, 0), do: :net_kernel.get_state()
+    net_state = get_net_state()
 
-    cond do
-      !net_state ->
+    case net_state do
+      nil ->
         :ok
 
-      net_state.started == :no and release? ->
-        Logger.warning("""
-        Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:
+      %{started: :no} = _state when release? ->
+        warn_node_not_running_distributed_mode()
 
-            export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
-            export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
-        """)
+      %{started: :no} = _state ->
+        warn_node_not_running_distributed_mode_with_longnames()
 
-      net_state.started == :no or (!release? and net_state.started != :no and net_state[:name_domain] != :longnames) ->
-        Logger.warning("""
-        Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
-        longnames.
-        https://www.erlang.org/doc/man/net_kernel.html#start-2
-        """)
+      # !release? and state.started != :no and state[:name_domain] != :longnames ->
+      # warn_node_not_running_distributed_mode_with_longnames()
 
-      net_state[:name_domain] != :longnames and release? ->
-        Logger.warning("""
-        Node not running with longnames which are required for DNS discovery.
-        Ensure the following exports are set in your rel/env.sh.eex file:
+      # net_state.started == :no or (!release? and net_state.started != :no and net_state[:name_domain] != :longnames) ->
+      #   Logger.warning("""
+      #   Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+      #   longnames.
+      #   https://www.erlang.org/doc/man/net_kernel.html#start-2
+      #   """)
 
-            export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
-            export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
-        """)
+      # net_state[:name_domain] != :longnames and release? ->
+      #   Logger.warning("""
+      #   Node not running with longnames which are required for DNS discovery.
+      #   Ensure the following exports are set in your rel/env.sh.eex file:
 
-      true ->
-        :ok
+      #       export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
+      #       export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
+      #   """)
+
+        _ ->
+          :ok
     end
   end
 

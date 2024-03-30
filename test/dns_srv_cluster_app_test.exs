@@ -119,4 +119,23 @@ defmodule DNSSRVClusterAppTest do
 
     postrun()
   end
+
+  test "without distribution warning message is printed" do
+    Process.register(self(), :DNSSRVClusterAppTest)
+
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.internal",
+        resolver: DNSSRVClusterAppTest.Resolver
+      ]
+    )
+
+    prerun()
+
+    worker = DNSSRVCluster.get_pid()
+    wait_for_node_discovery(worker)
+
+    postrun()
+  end
+
 end
