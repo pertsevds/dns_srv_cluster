@@ -184,10 +184,10 @@ defmodule DNSSRVClusterAppTest do
       )
 
       System.put_env("RELEASE_NAME", "my_app")
+      {:ok, _pid} = Node.start(:my_node, :shortnames)
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, _pid} = Node.start(:my_node, :shortnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -206,9 +206,10 @@ defmodule DNSSRVClusterAppTest do
         ]
       )
 
+      {:ok, _pid} = Node.start(:my_node, :shortnames)
+
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, _pid} = Node.start(:my_node, :shortnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -227,9 +228,10 @@ defmodule DNSSRVClusterAppTest do
         ]
       )
 
+      {:ok, _pid} = Node.start(:my_node@localhost, :longnames)
+
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, _pid} = Node.start(:my_node, :longnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -247,10 +249,10 @@ defmodule DNSSRVClusterAppTest do
     )
 
     System.put_env("RELEASE_NAME", "my_app")
+    {:ok, _pid} = Node.start(:my_node@localhost, :longnames)
 
     res =
       ExUnit.CaptureLog.capture_log(fn ->
-        {:ok, _pid} = Node.start(:my_node, :longnames)
         :ok = Application.start(:dns_srv_cluster)
         :sys.get_state(DNSSRVCluster.get_pid())
       end)
