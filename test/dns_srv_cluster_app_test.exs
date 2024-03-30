@@ -120,7 +120,7 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  test "Handle lookup error" do
+  test "lookup error warning is printed" do
     Application.put_all_env(
       dns_srv_cluster: [
         query: "_app._tcp.nonexistent.domain",
@@ -141,6 +141,25 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  # test "without distribution the warning message is printed" do
+    test "without distribution the warning message is printed" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.Resolver
+        ]
+      )
+
+      Application.stop(:dns_srv_cluster)
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~ "sdfjkhsdfkjh"
+
+      postrun()
+    end
 
 end
