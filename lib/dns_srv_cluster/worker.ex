@@ -106,7 +106,7 @@ defmodule DNSSRVCluster.Worker do
     end
   end
 
-  defp warn_node_not_running_distributed_mode do
+  defp warn_node_in_release_not_running_distributed_mode do
     Logger.warning("""
     Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:
 
@@ -115,7 +115,7 @@ defmodule DNSSRVCluster.Worker do
     """)
   end
 
-  defp warn_node_not_running_distributed_mode_with_longnames do
+  defp warn_node_out_of_release_not_running_distributed_mode do
     Logger.warning("""
     Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
     longnames.
@@ -123,7 +123,7 @@ defmodule DNSSRVCluster.Worker do
     """)
   end
 
-  defp warn_node_not_running_with_longnames do
+  defp warn_node_in_release_not_running_with_longnames do
     Logger.warning("""
     Node not running with longnames which are required for DNS discovery.
     Ensure the following exports are set in your rel/env.sh.eex file:
@@ -139,22 +139,16 @@ defmodule DNSSRVCluster.Worker do
 
     case net_state do
       %{started: :no} = _state when release? ->
-        warn_node_not_running_distributed_mode()
+        warn_node_in_release_not_running_distributed_mode()
 
-      %{started: :no} = _state ->
-        warn_node_not_running_distributed_mode_with_longnames()
+      %{started: :no} = _state when not release? ->
+        warn_node_out_of_release_not_running_distributed_mode()
 
-      %{started: started, name_domain: :shortnames} = _state when not release? and started != :no ->
-        warn_node_not_running_distributed_mode_with_longnames()
+      #   %{started: started, name_domain: :shortnames} = _state when not release? and started != :no ->
+      # warn_node_not_running_distributed_mode_with_longnames()
 
-      # net_state[:name_domain] != :longnames and release? ->
-      #   Logger.warning("""
-      #   Node not running with longnames which are required for DNS discovery.
-      #   Ensure the following exports are set in your rel/env.sh.eex file:
-
-      #       export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
-      #       export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
-      #   """)
+      %{name_domain: :longnames} = _state when release? ->
+        warn_node_in_release_not_running_with_longnames()
 
       _ ->
         :ok
