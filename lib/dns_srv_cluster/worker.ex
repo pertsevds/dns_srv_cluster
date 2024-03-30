@@ -138,9 +138,6 @@ defmodule DNSSRVCluster.Worker do
     net_state = get_net_state()
 
     case net_state do
-      nil ->
-        :ok
-
       %{started: :no} = _state when release? ->
         warn_node_not_running_distributed_mode()
 
