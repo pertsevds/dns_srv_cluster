@@ -142,6 +142,8 @@ defmodule DNSSRVClusterAppTest do
   end
 
     test "without distribution the warning message is printed" do
+      Process.register(self(), :DNSSRVClusterAppTest)
+
       Application.put_all_env(
         dns_srv_cluster: [
           query: "_app._tcp.nonexistent.domain",
@@ -157,7 +159,7 @@ defmodule DNSSRVClusterAppTest do
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
 
-      assert res =~ "sdfjkhsdfkjh"
+      assert res =~ "[warning] Node not running in distributed mode."
 
       postrun()
     end
