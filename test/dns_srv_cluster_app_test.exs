@@ -141,7 +141,7 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  test "running outside of a release should pint the warning message" do
+  test "running outside of a release should print the warning message" do
     Process.register(self(), :DNSSRVClusterAppTest)
 
     Application.put_all_env(
@@ -167,7 +167,7 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  test "running in release without distribution should pint the warning message" do
+  test "running in release without distribution should print the warning message" do
     Process.register(self(), :DNSSRVClusterAppTest)
 
     Application.put_all_env(
