@@ -11,7 +11,7 @@ defmodule DNSSRVClusterAppTest do
     no_connect_diff_base: ~c"no_connect_diff_base.internal"
   }
 
-  defp on_test_exit do
+  defp tests_cleanup do
     Application.stop(:dns_srv_cluster)
     System.delete_env("RELEASE_NAME")
     Application.delete_env(:dns_srv_cluster, :query)
@@ -19,8 +19,18 @@ defmodule DNSSRVClusterAppTest do
   end
 
   setup do
-    on_exit(&on_test_exit/0)
+    on_exit(&tests_cleanup/0)
     :ok
+  end
+
+  setup_all do
+    {stdout, res} = System.cmd("epmd", ["-daemon"])
+
+    if res == 0 do
+      :ok
+    else
+      {:error, {res, stdout}}
+    end
   end
 
   defp wait_for_node_discovery(cluster) do
@@ -172,17 +182,20 @@ defmodule DNSSRVClusterAppTest do
           resolver: DNSSRVClusterAppTest.NullResolver
         ]
       )
+
       System.put_env("RELEASE_NAME", "my_app")
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          app = :net_kernel.start(:my_app, %{name_domain: :shortnames})
-          dbg(app)
-          # :ok = Application.start(:dns_srv_cluster)
-          # :sys.get_state(DNSSRVCluster.get_pid())
+          {:ok, pid} = Node.start(:my_node, :shortnames)
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
         end)
 
-      assert res =~ "asdjkjh"
+      assert res =~ """
+             Node not running with longnames which are required for DNS discovery.
+             Ensure the following exports are set in your rel/env.sh.eex file:
+             """
     end
   end
 end
