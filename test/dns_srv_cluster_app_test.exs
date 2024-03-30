@@ -141,27 +141,54 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-    test "without distribution the warning message is printed" do
-      Process.register(self(), :DNSSRVClusterAppTest)
+  test "running outside of a release should pint the warning message" do
+    Process.register(self(), :DNSSRVClusterAppTest)
 
-      Application.put_all_env(
-        dns_srv_cluster: [
-          query: "_app._tcp.nonexistent.domain",
-          resolver: DNSSRVClusterAppTest.Resolver
-        ]
-      )
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.Resolver
+      ]
+    )
 
-      Application.stop(:dns_srv_cluster)
+    Application.stop(:dns_srv_cluster)
 
-      res =
-        ExUnit.CaptureLog.capture_log(fn ->
-          :ok = Application.start(:dns_srv_cluster)
-          :sys.get_state(DNSSRVCluster.get_pid())
-        end)
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
 
-      assert res =~ "[warning] Node not running in distributed mode."
+    assert res =~ """
+           [warning] Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+           longnames.
+           """
 
-      postrun()
-    end
+    postrun()
+  end
+
+  test "running in release without distribution should pint the warning message" do
+    Process.register(self(), :DNSSRVClusterAppTest)
+
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.Resolver
+      ]
+    )
+
+    Application.stop(:dns_srv_cluster)
+
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
+
+    assert res =~ "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
+
+    postrun()
+  end
+
 
 end
