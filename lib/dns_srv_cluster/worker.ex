@@ -71,15 +71,19 @@ defmodule DNSSRVCluster.Worker do
     records = resolver.lookup(query, :srv)
 
     case records do
-      [] ->
+      {:ok, []} ->
         Logger.warning("DNS query `#{query}` has not found any records.")
         []
 
-      records when is_list(records) ->
+      {:ok, records} when is_list(records) ->
         Enum.map(records, fn srv ->
           node = get_name_from_srv_record(srv)
           :"#{basename}@#{node}"
         end)
+
+      {:error, err} ->
+        Logger.warning("DNS lookup failed with error: #{err}.")
+        []
     end
   end
 
@@ -96,40 +100,64 @@ defmodule DNSSRVCluster.Worker do
     schedule_next_poll(state)
   end
 
-  # credo:disable-for-next-line
+  defp get_net_state do
+    if function_exported?(:net_kernel, :get_state, 0) do
+      :net_kernel.get_state()
+    end
+  end
+
+  defp warn_node_in_release_not_running_distributed_mode do
+    Logger.warning("""
+    Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:
+
+        export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
+        export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
+    """)
+  end
+
+  defp warn_node_out_of_release_not_running_distributed_mode do
+    Logger.warning("""
+    Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+    longnames.
+    See: https://hexdocs.pm/elixir/Node.html#start/3
+    """)
+  end
+
+  def warn_node_out_of_release_running_without_longnames do
+    Logger.warning("""
+    Node not running with longnames which are required for DNS discovery.
+    See: https://hexdocs.pm/elixir/Node.html#start/3
+    """)
+  end
+
+  defp warn_node_in_release_running_without_longnames do
+    Logger.warning("""
+    Node not running with longnames which are required for DNS discovery.
+    Ensure the following exports are set in your rel/env.sh.eex file:
+
+        export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
+        export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
+    """)
+  end
+
   defp warn_on_invalid_dist do
     release? = is_binary(System.get_env("RELEASE_NAME"))
-    net_state = if function_exported?(:net_kernel, :get_state, 0), do: :net_kernel.get_state()
+    net_state = get_net_state()
 
-    cond do
-      !net_state ->
-        :ok
+    case net_state do
+      %{started: :no} = _state when release? ->
+        warn_node_in_release_not_running_distributed_mode()
 
-      net_state.started == :no and release? ->
-        Logger.warning("""
-        Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:
+      %{started: :no} = _state when not release? ->
+        warn_node_out_of_release_not_running_distributed_mode()
 
-            export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
-            export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
-        """)
+      %{started: started, name_domain: :shortnames} = _state when not release? and started != :no ->
+        warn_node_out_of_release_running_without_longnames()
 
-      net_state.started == :no or (!release? and net_state.started != :no and net_state[:name_domain] != :longnames) ->
-        Logger.warning("""
-        Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
-        longnames.
-        https://www.erlang.org/doc/man/net_kernel.html#start-2
-        """)
+      %{name_domain: :shortnames} = _state when release? ->
+        warn_node_in_release_running_without_longnames()
 
-      net_state[:name_domain] != :longnames and release? ->
-        Logger.warning("""
-        Node not running with longnames which are required for DNS discovery.
-        Ensure the following exports are set in your rel/env.sh.eex file:
-
-            export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-"name"}"
-            export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
-        """)
-
-      true ->
+      _ ->
         :ok
     end
   end

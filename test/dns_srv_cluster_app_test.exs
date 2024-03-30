@@ -11,18 +11,31 @@ defmodule DNSSRVClusterAppTest do
     no_connect_diff_base: ~c"no_connect_diff_base.internal"
   }
 
-  defp wait_for_node_discovery(cluster) do
-    :sys.get_state(cluster)
+  defp tests_cleanup do
+    Application.stop(:dns_srv_cluster)
+    System.delete_env("RELEASE_NAME")
+    Application.delete_env(:dns_srv_cluster, :query)
+    :net_kernel.stop()
+  end
+
+  setup do
+    on_exit(&tests_cleanup/0)
     :ok
   end
 
-  defp prerun do
-    Application.stop(:dns_srv_cluster)
-    :ok = Application.start(:dns_srv_cluster)
+  setup_all do
+    {stdout, res} = System.cmd("epmd", ["-daemon"])
+
+    if res == 0 do
+      :ok
+    else
+      {:error, "EPMD start failed. Return code: #{res}, stdout: #{stdout}."}
+    end
   end
 
-  defp postrun do
-    Application.stop(:dns_srv_cluster)
+  defp wait_for_node_discovery(cluster) do
+    :sys.get_state(cluster)
+    :ok
   end
 
   test "discovers nodes" do
@@ -35,7 +48,7 @@ defmodule DNSSRVClusterAppTest do
       ]
     )
 
-    prerun()
+    :ok = Application.start(:dns_srv_cluster)
 
     worker = DNSSRVCluster.get_pid()
     wait_for_node_discovery(worker)
@@ -59,8 +72,6 @@ defmodule DNSSRVClusterAppTest do
 
     assert n2 == [:"app@already_known.internal"]
     assert n3 == [:"app@new.internal", :"app@no_connect_diff_base.internal"]
-
-    postrun()
   end
 
   test "query with :ignore does not start worker" do
@@ -70,11 +81,9 @@ defmodule DNSSRVClusterAppTest do
       ]
     )
 
-    prerun()
+    :ok = Application.start(:dns_srv_cluster)
 
     assert DNSSRVCluster.get_pid() == nil
-
-    postrun()
   end
 
   test "Emits warning if DNS records was not found" do
@@ -85,8 +94,6 @@ defmodule DNSSRVClusterAppTest do
       ]
     )
 
-    Application.stop(:dns_srv_cluster)
-
     res =
       ExUnit.CaptureLog.capture_log(fn ->
         :ok = Application.start(:dns_srv_cluster)
@@ -94,17 +101,10 @@ defmodule DNSSRVClusterAppTest do
       end)
 
     assert res =~ "not found"
-
-    postrun()
   end
 
   test "discover nodes without query fails" do
-    Application.delete_env(:dns_srv_cluster, :query)
-
-    Application.stop(:dns_srv_cluster)
     assert match?({:error, _}, Application.start(:dns_srv_cluster))
-
-    postrun()
   end
 
   test "discover nodes query must be a string" do
@@ -114,9 +114,149 @@ defmodule DNSSRVClusterAppTest do
       ]
     )
 
-    Application.stop(:dns_srv_cluster)
     assert match?({:error, _}, Application.start(:dns_srv_cluster))
+  end
 
-    postrun()
+  test "lookup error warning is printed" do
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.ErrResolver
+      ]
+    )
+
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
+
+    assert res =~ "DNS lookup failed with error: Lookup failed."
+  end
+
+  if function_exported?(:net_kernel, :get_state, 0) do
+    test "running in release without distribution should print the warning message" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
+
+      System.put_env("RELEASE_NAME", "my_app")
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~
+               "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
+    end
+
+    test "running outside of a release should print the warning message" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~ """
+             [warning] Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+             longnames.
+             """
+    end
+
+    test "running in release with short names distribution should print the warning message" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
+
+      System.put_env("RELEASE_NAME", "my_app")
+      {:ok, _pid} = Node.start(:my_node, :shortnames)
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~ """
+             Node not running with longnames which are required for DNS discovery.
+             Ensure the following exports are set in your rel/env.sh.eex file:
+             """
+    end
+
+    test "running out of a release with short names distribution should print the warning message" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
+
+      {:ok, _pid} = Node.start(:my_node, :shortnames)
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~ """
+             Node not running with longnames which are required for DNS discovery.
+             See: https://hexdocs.pm/elixir/Node.html#start/3
+             """
+    end
+
+    test "running out of a release with long names distribution should not print any warning messages" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
+
+      {:ok, _pid} = Node.start(:my_node@localhost, :longnames)
+
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      refute res =~ "Node not running"
+    end
+  end
+
+  test "running in release with long names distribution should not print any warning messages" do
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.NullResolver
+      ]
+    )
+
+    System.put_env("RELEASE_NAME", "my_app")
+    {:ok, _pid} = Node.start(:my_node@localhost, :longnames)
+
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
+
+    refute res =~ "Node not running"
   end
 end

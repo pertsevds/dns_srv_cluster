@@ -1,4 +1,4 @@
-defmodule DNSSRVClusterAppTest.NullResolver do
+defmodule DNSSRVClusterAppTest.ErrResolver do
   @moduledoc false
   @nodes %{
     my_node: ~c"my_node.internal",
@@ -14,7 +14,7 @@ defmodule DNSSRVClusterAppTest.NullResolver do
   def basename(_node_name), do: "app"
 
   def lookup(query, type) when is_binary(query) and type in [:srv] do
-    []
+    {:error, "Lookup failed"}
   end
 
   def my_node do

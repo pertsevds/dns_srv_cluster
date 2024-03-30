@@ -25,7 +25,7 @@ defmodule DNSSRVClusterAppTest.Resolver do
     rec2 = @srv_records.already_known
     rec3 = @srv_records.new
     rec4 = @srv_records.no_connect_diff_base
-    [rec1, rec2, rec3, rec4]
+    {:ok, [rec1, rec2, rec3, rec4]}
   end
 
   @new_node :"app@#{@nodes.new}"

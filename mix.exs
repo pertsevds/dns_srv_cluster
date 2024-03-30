@@ -27,9 +27,13 @@ defmodule DNSSRVCluster.MixProject do
       deps: deps(styler_compat),
       source_url: @scm_url,
       homepage_url: @scm_url,
+      elixirc_paths: elixirc_paths(Mix.env()),
       description: "Elixir clustering with DNS SRV records"
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp package do
     [
