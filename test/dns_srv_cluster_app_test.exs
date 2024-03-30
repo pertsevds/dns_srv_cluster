@@ -141,10 +141,7 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  elixir_version = System.version()
-  version_compat = Version.compare(elixir_version, "1.14.0")
-
-  if version_compat in [:gt, :eq] do
+  if function_exported?(:net_kernel, :get_state, 0) do
     test "running outside of a release should print the warning message" do
       Process.register(self(), :DNSSRVClusterAppTest)
 
