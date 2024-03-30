@@ -1,7 +1,7 @@
 defmodule DNSSRVCluster.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.2.0"
   @scm_url "https://github.com/pertsevds/dns_srv_cluster"
   @maintainer "Dmitriy Pertsev"
 

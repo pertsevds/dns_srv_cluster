@@ -14,7 +14,7 @@ The package can be installed by adding `dns_srv_cluster` to your list of depende
 ```elixir
 def deps do
   [
-    {:dns_srv_cluster, "~> 0.1.0"}
+    {:dns_srv_cluster, "~> 0.2.0"}
   ]
 end
 ```
@@ -64,7 +64,7 @@ Do in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:dns_srv_cluster, "~> 0.1.0", runtime: false}
+    {:dns_srv_cluster, "~> 0.2.0", runtime: false}
   ]
 end
 ```
