@@ -120,22 +120,27 @@ defmodule DNSSRVClusterAppTest do
     postrun()
   end
 
-  test "without distribution warning message is printed" do
-    Process.register(self(), :DNSSRVClusterAppTest)
-
+  test "Handle lookup error" do
     Application.put_all_env(
       dns_srv_cluster: [
-        query: "_app._tcp.internal",
-        resolver: DNSSRVClusterAppTest.Resolver
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.ErrResolver
       ]
     )
 
-    prerun()
+    Application.stop(:dns_srv_cluster)
 
-    worker = DNSSRVCluster.get_pid()
-    wait_for_node_discovery(worker)
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
+
+    assert res =~ "not found"
 
     postrun()
   end
+
+  # test "without distribution the warning message is printed" do
 
 end

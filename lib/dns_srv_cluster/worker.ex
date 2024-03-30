@@ -71,15 +71,18 @@ defmodule DNSSRVCluster.Worker do
     records = resolver.lookup(query, :srv)
 
     case records do
-      [] ->
+      {:ok, []} ->
         Logger.warning("DNS query `#{query}` has not found any records.")
         []
 
-      records when is_list(records) ->
+      {:ok, records} when is_list(records) ->
         Enum.map(records, fn srv ->
           node = get_name_from_srv_record(srv)
           :"#{basename}@#{node}"
         end)
+
+      {:error, err} ->
+        Logger.warning("DNS lookup failed with error: #{err}.")
     end
   end
 
@@ -99,8 +102,6 @@ defmodule DNSSRVCluster.Worker do
   defp get_net_state do
     if function_exported?(:net_kernel, :get_state, 0) do
       :net_kernel.get_state()
-    else
-      nil
     end
   end
 
@@ -115,10 +116,10 @@ defmodule DNSSRVCluster.Worker do
 
   defp warn_node_not_running_distributed_mode_with_longnames do
     Logger.warning("""
-      Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
-      longnames.
-      https://www.erlang.org/doc/man/net_kernel.html#start-2
-      """)
+    Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
+    longnames.
+    https://www.erlang.org/doc/man/net_kernel.html#start-2
+    """)
   end
 
   defp warn_on_invalid_dist do
@@ -154,8 +155,8 @@ defmodule DNSSRVCluster.Worker do
       #       export RELEASE_NODE="${RELEASE_NODE:-"<%= @release.name %>"}"
       #   """)
 
-        _ ->
-          :ok
+      _ ->
+        :ok
     end
   end
 

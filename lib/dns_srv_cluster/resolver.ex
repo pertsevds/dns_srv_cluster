@@ -26,11 +26,10 @@ defmodule DNSSRVCluster.Resolver do
   def lookup(query, type) when is_binary(query) and type in [:srv] do
     case :inet_res.getbyname(~c"#{query}", type) do
       {:ok, hostent(h_addr_list: addr_list)} ->
-        addr_list
+        {:ok, addr_list}
 
-      {:error, _} ->
-        Logger.warning(~s(inet_res.getbyname for query "#{query}" with type "#{type}"failed.))
-        []
+      {:error, err} ->
+        {:error, err}
     end
   end
 
