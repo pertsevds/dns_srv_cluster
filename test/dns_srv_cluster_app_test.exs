@@ -198,7 +198,7 @@ defmodule DNSSRVClusterAppTest do
              """
     end
 
-    test "running with long names distribution should not print any warning messages" do
+    test "running out of a release with short names distribution should print the warning message" do
       Application.put_all_env(
         dns_srv_cluster: [
           query: "_app._tcp.nonexistent.domain",
@@ -206,7 +206,26 @@ defmodule DNSSRVClusterAppTest do
         ]
       )
 
-      System.put_env("RELEASE_NAME", "my_app")
+      res =
+        ExUnit.CaptureLog.capture_log(fn ->
+          {:ok, pid} = Node.start(:my_node, :shortnames)
+          :ok = Application.start(:dns_srv_cluster)
+          :sys.get_state(DNSSRVCluster.get_pid())
+        end)
+
+      assert res =~ """
+             Node not running with longnames which are required for DNS discovery.
+             See: https://hexdocs.pm/elixir/Node.html#start/3
+             """
+    end
+
+    test "running out of a release with long names distribution should not print any warning messages" do
+      Application.put_all_env(
+        dns_srv_cluster: [
+          query: "_app._tcp.nonexistent.domain",
+          resolver: DNSSRVClusterAppTest.NullResolver
+        ]
+      )
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
@@ -217,5 +236,25 @@ defmodule DNSSRVClusterAppTest do
 
       refute res =~ "Node not running"
     end
+  end
+
+  test "running in release with long names distribution should not print any warning messages" do
+    Application.put_all_env(
+      dns_srv_cluster: [
+        query: "_app._tcp.nonexistent.domain",
+        resolver: DNSSRVClusterAppTest.NullResolver
+      ]
+    )
+
+    System.put_env("RELEASE_NAME", "my_app")
+
+    res =
+      ExUnit.CaptureLog.capture_log(fn ->
+        {:ok, pid} = Node.start(:my_node, :longnames)
+        :ok = Application.start(:dns_srv_cluster)
+        :sys.get_state(DNSSRVCluster.get_pid())
+      end)
+
+    refute res =~ "Node not running"
   end
 end

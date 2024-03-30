@@ -119,11 +119,18 @@ defmodule DNSSRVCluster.Worker do
     Logger.warning("""
     Node not running in distributed mode. When running outside of a release, you must start net_kernel manually with
     longnames.
-    https://www.erlang.org/doc/man/net_kernel.html#start-2
+    See: https://hexdocs.pm/elixir/Node.html#start/3
     """)
   end
 
-  defp warn_node_in_release_not_running_with_longnames do
+  def warn_node_out_of_release_running_without_longnames do
+    Logger.warning("""
+    Node not running with longnames which are required for DNS discovery.
+    See: https://hexdocs.pm/elixir/Node.html#start/3
+    """)
+  end
+
+  defp warn_node_in_release_running_without_longnames do
     Logger.warning("""
     Node not running with longnames which are required for DNS discovery.
     Ensure the following exports are set in your rel/env.sh.eex file:
@@ -144,11 +151,11 @@ defmodule DNSSRVCluster.Worker do
       %{started: :no} = _state when not release? ->
         warn_node_out_of_release_not_running_distributed_mode()
 
-      #   %{started: started, name_domain: :shortnames} = _state when not release? and started != :no ->
-      # warn_node_not_running_distributed_mode_with_longnames()
+      %{started: started, name_domain: :shortnames} = _state when not release? and started != :no ->
+        warn_node_out_of_release_running_without_longnames()
 
       %{name_domain: :shortnames} = _state when release? ->
-        warn_node_in_release_not_running_with_longnames()
+        warn_node_in_release_running_without_longnames()
 
       _ ->
         :ok
