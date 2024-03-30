@@ -177,6 +177,8 @@ defmodule DNSSRVClusterAppTest do
       ]
     )
 
+    System.put_env("RELEASE_NAME", "my_app")
+
     Application.stop(:dns_srv_cluster)
 
     res =
@@ -185,10 +187,11 @@ defmodule DNSSRVClusterAppTest do
         :sys.get_state(DNSSRVCluster.get_pid())
       end)
 
-    assert res =~ "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
+    assert res =~
+             "Node not running in distributed mode. Ensure the following exports are set in your rel/env.sh.eex file:"
+
+    System.delete_env("RELEASE_NAME")
 
     postrun()
   end
-
-
 end

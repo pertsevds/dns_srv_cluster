@@ -137,6 +137,9 @@ defmodule DNSSRVCluster.Worker do
       %{started: :no} = _state ->
         warn_node_not_running_distributed_mode_with_longnames()
 
+      %{started: started, name_domain: :shortnames} = _state when started != :no ->
+        warn_node_not_running_distributed_mode_with_longnames()
+
       # !release? and state.started != :no and state[:name_domain] != :longnames ->
       # warn_node_not_running_distributed_mode_with_longnames()
 
