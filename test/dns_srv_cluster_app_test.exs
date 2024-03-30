@@ -29,7 +29,7 @@ defmodule DNSSRVClusterAppTest do
     if res == 0 do
       :ok
     else
-      {:error, {res, stdout}}
+      {:error, "EPMD start failed. Return code: #{res}, stdout: #{stdout}."}
     end
   end
 
@@ -187,7 +187,7 @@ defmodule DNSSRVClusterAppTest do
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, pid} = Node.start(:my_node, :shortnames)
+          {:ok, _pid} = Node.start(:my_node, :shortnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -208,7 +208,7 @@ defmodule DNSSRVClusterAppTest do
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, pid} = Node.start(:my_node, :shortnames)
+          {:ok, _pid} = Node.start(:my_node, :shortnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -229,7 +229,7 @@ defmodule DNSSRVClusterAppTest do
 
       res =
         ExUnit.CaptureLog.capture_log(fn ->
-          {:ok, pid} = Node.start(:my_node, :longnames)
+          {:ok, _pid} = Node.start(:my_node, :longnames)
           :ok = Application.start(:dns_srv_cluster)
           :sys.get_state(DNSSRVCluster.get_pid())
         end)
@@ -250,7 +250,7 @@ defmodule DNSSRVClusterAppTest do
 
     res =
       ExUnit.CaptureLog.capture_log(fn ->
-        {:ok, pid} = Node.start(:my_node, :longnames)
+        {:ok, _pid} = Node.start(:my_node, :longnames)
         :ok = Application.start(:dns_srv_cluster)
         :sys.get_state(DNSSRVCluster.get_pid())
       end)
