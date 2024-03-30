@@ -1,0 +1,5 @@
+{
+  "skip_files": [
+    "lib/dns_srv_cluster/app/default.ex"
+  ]
+}
