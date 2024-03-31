@@ -6,6 +6,10 @@ Elixir clustering with DNS SRV records.
 
 [![CI](https://github.com/pertsevds/dns_srv_cluster/actions/workflows/ci.yml/badge.svg)](https://github.com/pertsevds/dns_srv_cluster/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/pertsevds/dns_srv_cluster/badge.svg?branch=main)](https://coveralls.io/github/pertsevds/dns_srv_cluster?branch=main)
+[![Hex.pm License](https://img.shields.io/hexpm/l/dns_srv_cluster)](https://hex.pm/packages/dns_srv_cluster)
+[![Hex.pm Version](https://img.shields.io/hexpm/v/dns_srv_cluster)](https://hex.pm/packages/dns_srv_cluster)
+[![Hex.pm Docs](https://img.shields.io/badge/hex-docs-lightgreen)](https://hexdocs.pm/nbpm)
+[![Hex.pm Downloads](https://img.shields.io/hexpm/dt/dns_srv_cluster)](https://hexdocs.pm/nbpm)
 
 ## Installation
 
