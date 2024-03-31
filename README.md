@@ -9,7 +9,7 @@ Elixir clustering with DNS SRV records.
 [![Hex.pm License](https://img.shields.io/hexpm/l/dns_srv_cluster)](https://hex.pm/packages/dns_srv_cluster)
 [![Hex.pm Version](https://img.shields.io/hexpm/v/dns_srv_cluster)](https://hex.pm/packages/dns_srv_cluster)
 [![Hex.pm Docs](https://img.shields.io/badge/hex-docs-lightgreen)](https://hexdocs.pm/nbpm)
-[![Hex.pm Downloads](https://img.shields.io/hexpm/dt/dns_srv_cluster)](https://hexdocs.pm/nbpm)
+[![Hex.pm Downloads](https://img.shields.io/hexpm/dt/dns_srv_cluster)](https://hex.pm/packages/dns_srv_cluster)
 
 ## Installation
 
