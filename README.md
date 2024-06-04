@@ -89,11 +89,11 @@ children = [
 
 Tests automatically run against a matrix of OTP and Elixir Versions, see the [ci.yml](https://github.com/pertsevds/dns_srv_cluster/tree/main/.github/workflows/ci.yml) for details.
 
-| OTP \ Elixir | 1.12 | 1.13 | 1.14 | 1.15 | 1.16 |
+| OTP \ Elixir | 1.13 | 1.14 | 1.15 | 1.16 | 1.17 |
 |:------------:|:----:|:----:|:----:|:----:|:----:|
-| 24           | ✅   | ✅   | ✅   | ✅   | ✅  |
-| 25           | N/A  | ✅   | ✅   | ✅   | ✅   |
-| 26           | N/A  | N/A  | ✅   | ✅   | ✅   |
+| 24           | ✅   | ✅   | ✅   | ✅  | N/A  |
+| 25           | ✅   | ✅   | ✅   | ✅   | N/A  |
+| 26           | N/A  | ✅   | ✅   | ✅   | N/A  |
 
 ## Documentation
 

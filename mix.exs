@@ -12,7 +12,7 @@ defmodule DNSSRVCluster.MixProject do
     [
       app: :dns_srv_cluster,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: aliases(),
