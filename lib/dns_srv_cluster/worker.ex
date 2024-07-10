@@ -31,7 +31,10 @@ defmodule DNSSRVCluster.Worker do
   defp connect_async(nodes, resolver, timeout) do
     Task.async_stream(nodes, &resolver.connect_to(&1),
       max_concurrency: length(nodes),
-      timeout: timeout
+      ordered: false,
+      timeout: timeout,
+      on_timeout: :kill_task,
+      zip_input_on_exit: true
     )
   end
 
@@ -55,8 +58,8 @@ defmodule DNSSRVCluster.Worker do
         {:ok, {node_name, :ignored}} ->
           Logger.warning("Connect request to \"#{node_name}\" ignored. Looks like Erlang distribution is not enabled.")
 
-        :error ->
-          Logger.error("connect_nodes/3 Task async error.")
+        {:exit, {node_name, :timeout}} ->
+          Logger.warning("Connect to \"#{node_name}\" timed out.")
       end
     end)
   end
