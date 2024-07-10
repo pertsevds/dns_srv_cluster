@@ -126,7 +126,7 @@ defmodule DNSSRVCluster.Worker do
     """)
   end
 
-  def warn_node_out_of_release_running_without_longnames do
+  defp warn_node_out_of_release_running_without_longnames do
     Logger.warning("""
     Node not running with longnames which are required for DNS discovery.
     See: https://hexdocs.pm/elixir/Node.html#start/3
