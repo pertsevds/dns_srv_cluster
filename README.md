@@ -92,9 +92,9 @@ Tests automatically run against a matrix of OTP and Elixir Versions, see the [ci
 | OTP \ Elixir | 1.14 | 1.15 | 1.16 | 1.17 |
 |:------------:|:----:|:----:|:----:|:----:|
 | 24           | ✅   | ✅   | ✅  | N/A  |
-| 25           | ✅   | ✅   | ✅  | N/A  |
-| 26           | ✅   | ✅   | ✅  | N/A  |
-| 27           | N/A   | N/A   | N/A  | N/A  |
+| 25           | ✅   | ✅   | ✅  | ✅  |
+| 26           | ✅   | ✅   | ✅  | ✅  |
+| 27           | N/A   | N/A   | N/A  | ✅  |
 
 ## Documentation
 
