@@ -59,7 +59,7 @@ defmodule DNSSRVCluster.Worker do
           Logger.warning("Connect request to \"#{node_name}\" ignored. Looks like Erlang distribution is not enabled.")
 
         {:exit, {node_name, :timeout}} ->
-            Logger.warning("Connect to \"#{node_name}\" timed out.")
+          Logger.warning("Connect to \"#{node_name}\" timed out.")
       end
     end)
   end
