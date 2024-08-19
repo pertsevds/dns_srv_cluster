@@ -9,7 +9,7 @@ defmodule DNSSRVCluster.MixProject do
     [
       app: :dns_srv_cluster,
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       package: package(),
       aliases: aliases(),
@@ -55,7 +55,7 @@ defmodule DNSSRVCluster.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10", only: :test, runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
-      {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
